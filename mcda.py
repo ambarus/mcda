@@ -1,11 +1,19 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import argparse
 import networkx as nx
 import matplotlib.pyplot as plt
 
+def parse_args():
+	parser = argparse.ArgumentParser(description="Multi-criteria optimization algoritm")
+	parser.add_argument("-c", "--controlers", dest="controlers", metavar="C", default=2, type=int, help="Number of controlers")
+	return parser.parse_args()
+
 if __name__ == '__main__':
 	elist = [(1,5,4),(1,6,2),(2,3,5),(2,4,2),(2,5,3),(2,6,6),(3,2,5),(3,5,5),(3,6,2),(4,2,2),(4,5,1),(4,6,4),(5,1,4),(5,2,3),(5,3,5),(5,4,1),(5,6,3),(6,1,2),(6,2,6),(6,3,2),(6,4,4),(6,5,3)]
+
+	args=parse_args()
 
 	G = nx.Graph()
 	G.add_nodes_from([1,6])
