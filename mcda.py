@@ -68,6 +68,34 @@ def worst_latency(g_path_len, ci):
 
     return max(s_ci_min_len)
 
+def inter_controller_latency(g_path_len, ci):
+    """Inter controller latency for a graph and a specific Ci controller
+    placement
+
+    Parameters
+    ----------
+    g_path_len : dictionary of dictionaries containing shortest path lengths
+                 between all nodes in a weighted graph.
+                 g_path_len is keyed by source and target, of shortest path
+                 lengths
+    ci : particular placement of controllers. Dictionary is keyed by node and
+         has value int(1) if controller identifies with keyed node.
+
+    Returns
+    -------
+    Inter controller latency for a graph and a specific Ci controller placement
+    """
+    icl_path_len = []
+    for source, s_value in g_path_len.iteritems():
+        if ci[source]:
+            for target, t_value in s_value.iteritems():
+                if ci[target]:
+                    icl_path_len.append(g_path_len[source][target])
+            # compute only 1:N controller-to-controllers distances
+            break
+
+    return max(icl_path_len)
+
 if __name__ == '__main__':
     elist = [(1,5,4),(1,6,2),(2,3,5),(2,4,2),(2,5,3),(2,6,6),(3,2,5),(3,5,5),(3,6,2),(4,2,2),(4,5,1),(4,6,4),(5,1,4),(5,2,3),(5,3,5),(5,4,1),(5,6,3),(6,1,2),(6,2,6),(6,3,2),(6,4,4),(6,5,3)]
     cplacement = {1: {1: 0, 2: 0, 3: 0, 4: 0, 5: 1, 6: 1}, 2: {1: 0, 2: 0, 3: 1, 4: 0, 5: 1, 6: 0}, 3: {1: 0, 2: 0, 3: 1, 4: 0, 5: 0, 6: 1}, 4: {1: 0, 2: 0, 3: 0, 4: 1, 5: 0, 6: 1}}
@@ -80,6 +108,7 @@ if __name__ == '__main__':
 
     average_latency(G, cplacement)
     worst_latency(G, cplacement)
+    inter_controller_latency(G, cplacement)
 
     # positions for all nodes
     pos=nx.spring_layout(G)
