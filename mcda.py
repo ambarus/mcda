@@ -242,8 +242,18 @@ if __name__ == '__main__':
     for i, v in t_dparams.iteritems():
         min_list.append(min(v.itervalues()))
 
+    #temporary printing
+    result = min_list.index(max(min_list)) + 1
     # make selection among solutions
-    print (min_list.index(max(min_list)) + 1)
+    print "Optimum Ci placement is Ci =", result
+    if result == 1:
+        print "Controllers are placed in nodes 5 and 6"
+    elif result ==2:
+        print "Controllers are placed in nodes 5 and 3"
+    elif result ==3:
+        print "Controllers are placed in nodes 3 and 6"
+    else:
+        print "Controllers are placed in nodes 4 and 6"
 
     # positions for all nodes
     pos=nx.spring_layout(G)
