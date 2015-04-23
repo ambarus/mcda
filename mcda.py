@@ -6,10 +6,48 @@ import argparse
 import networkx as nx
 import matplotlib.pyplot as plt
 
+
+def restricted_float(x):
+    #Define a restricted float data type in interval (0, 1].
+    x = float(x)
+    if x <= 0.0 or x > 1.0:
+        raise argparse.ArgumentTypeError("%r not in range (0.0, 1.0]"%(x,))
+    return x
+
 def parse_args():
-    parser = argparse.ArgumentParser(description="Multi-criteria optimization algoritm")
-    parser.add_argument("-c", "--controlers", dest="controlers", metavar="C", default=2, type=int, help="Number of controlers")
-    return parser.parse_args()
+    """Parse user arguments
+
+    Returns
+    -------
+    args : Namespace object with user arguments
+    nargs : Number of user arguments
+    """
+    parser = argparse.ArgumentParser(description=
+                                     "Multi-criteria optimization algorithm")
+    parser.add_argument("-a", type=restricted_float,
+                        help="Average latency - failure free scenario. "
+                        "Expects a weight (priority) in interval (0, 1]. ")
+    parser.add_argument("-w", type=restricted_float,
+                        help="Worst case latency - failure free scenario. "
+                        "Expects a weight (priority) in interval (0, 1]. ")
+    parser.add_argument("-i", type=restricted_float,
+                        help="Inter controller latency. "
+                        "Expects a weight (priority) in interval (0, 1]. ")
+    #parser.add_argument("-c", "--controlers", dest="controlers", metavar="C",
+                         #default=2, type=int, help="Number of controlers")
+    args = parser.parse_args()
+    if not (args.a or args.w or args.i):
+        raise parser.error("No action requested, add -a or -w or -i option")
+    # nr of args
+    nargs = 0
+    if args.a:
+        nargs = nargs + 1
+    if args.w:
+        nargs = nargs + 1
+    if args.i:
+        nargs = nargs + 1
+
+    return args, nargs
 
 def average_latency(g_path_len, ci):
     """Average latency for a graph and a specific Ci controller placement
