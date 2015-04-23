@@ -1,7 +1,16 @@
 #!/usr/bin/env python
 # encoding: utf-8
+"""On Multi-controller Placement Optimization implementation"""
 
 from __future__ import division
+
+__author__ = """\n""".join(['Tudor Ambarus <tudor.ambarus@gmail.com>'])
+__copyright__ = ""
+__license__ = ""
+__version__ = ""
+__email__ = "tudor.ambarus@gmail.com"
+__status__ = "Development"
+
 from collections import defaultdict
 import argparse
 import networkx as nx
