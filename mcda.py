@@ -3,6 +3,7 @@
 """On Multi-controller Placement Optimization implementation"""
 
 from __future__ import division
+import random
 
 __author__ = """\n""".join(['Tudor Ambarus <tudor.ambarus@gmail.com>'])
 __copyright__ = ""
@@ -45,6 +46,7 @@ def parse_args():
                         "Expects a weight (priority) in interval (0, 1]. ")
     parser.add_argument("--static", help="Use default static undirected graph",
                         action="store_true")
+    parser.add_argument("-n", type=int, help="Number of graph nodes")
     #parser.add_argument("-c", "--controlers", dest="controlers", metavar="C",
                          #default=2, type=int, help="Number of controlers")
     args = parser.parse_args()
@@ -267,8 +269,14 @@ def static_execution(args, nargs):
     # display graph
     plt.show()
 
+def random_edge_list(args):
+    edge_list = [(i, j, random.randint(1, args.n))
+                 for i in range(args.n)
+                 for j in range(i+1, args.n)]
+    return edge_list
+
 def dynamic_execution(args, nargs):
-    pass
+    edge_list = random_edge_list(args)
 
 if __name__ == '__main__':
     # parse user arguments
