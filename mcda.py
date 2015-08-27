@@ -43,6 +43,8 @@ def parse_args():
     parser.add_argument("-i", type=restricted_float,
                         help="Inter controller latency. "
                         "Expects a weight (priority) in interval (0, 1]. ")
+    parser.add_argument("--static", help="Use default static undirected graph",
+                        action="store_true")
     #parser.add_argument("-c", "--controlers", dest="controlers", metavar="C",
                          #default=2, type=int, help="Number of controlers")
     args = parser.parse_args()
@@ -160,7 +162,7 @@ def normalize_dparam(dparam, weight, r, a):
     """
     return weight * (r - dparam) / (r - a)
 
-if __name__ == '__main__':
+def static_execution(args, nargs):
     elist = [(1,5,4),(1,6,2),(2,3,5),(2,4,2),(2,5,3),(2,6,6),(3,2,5),(3,5,5),
              (3,6,2),(4,2,2),(4,5,1),(4,6,4),(5,1,4),(5,2,3),(5,3,5),(5,4,1),
              (5,6,3),(6,1,2),(6,2,6),(6,3,2),(6,4,4),(6,5,3)]
@@ -168,9 +170,6 @@ if __name__ == '__main__':
                   2: {1: 0, 2: 0, 3: 1, 4: 0, 5: 1, 6: 0},
                   3: {1: 0, 2: 0, 3: 1, 4: 0, 5: 0, 6: 1},
                   4: {1: 0, 2: 0, 3: 0, 4: 1, 5: 0, 6: 1}}
-
-    # parse user arguments
-    args, nargs = parse_args()
 
     G = nx.Graph()
     G.add_nodes_from([1,6])
@@ -267,3 +266,15 @@ if __name__ == '__main__':
 
     # display graph
     plt.show()
+
+def dynamic_execution(args, nargs):
+    pass
+
+if __name__ == '__main__':
+    # parse user arguments
+    args, nargs = parse_args()
+
+    if args.static:
+        static_execution(args, nargs)
+    else:
+        dynamic_execution(args, nargs)
