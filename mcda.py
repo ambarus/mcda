@@ -45,7 +45,7 @@ def parse_args():
     parser.add_argument("-i", type=restricted_float,
                         help="Inter controller latency. "
                         "Expects a weight (priority) in interval (0, 1]. ")
-    parser.add_argument("--static", help="Use default static undirected graph",
+    parser.add_argument("--dynamic", help="Generate dynamic undirected graph",
                         action="store_true")
     parser.add_argument("-n", type=int, help="Number of graph nodes")
     parser.add_argument("-c", type=int, help="Number of controllers in graph. "
@@ -175,7 +175,7 @@ def print_ci_info(min_list, cplacement):
     result = min_list.index(max(min_list))
 
     #in static example, first ci placement is 1 and not 0
-    if args.static:
+    if not args.dynamic:
         result += 1
 
     print "Optimum Ci placement is Ci =", result
@@ -316,7 +316,7 @@ if __name__ == '__main__':
     # parse user arguments
     args, nargs = parse_args()
 
-    if args.static:
+    if not args.dynamic:
         static_execution()
     else:
         dynamic_execution()
