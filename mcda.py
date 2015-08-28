@@ -171,19 +171,35 @@ def normalize_dparam(dparam, weight, r, a):
     """
     return weight * (r - dparam) / (r - a)
 
-def static_execution(args, nargs):
-    elist = [(1,5,4),(1,6,2),(2,3,5),(2,4,2),(2,5,3),(2,6,6),(3,2,5),(3,5,5),
-             (3,6,2),(4,2,2),(4,5,1),(4,6,4),(5,1,4),(5,2,3),(5,3,5),(5,4,1),
-             (5,6,3),(6,1,2),(6,2,6),(6,3,2),(6,4,4),(6,5,3)]
-    cplacement = {1: {1: 0, 2: 0, 3: 0, 4: 0, 5: 1, 6: 1},
-                  2: {1: 0, 2: 0, 3: 1, 4: 0, 5: 1, 6: 0},
-                  3: {1: 0, 2: 0, 3: 1, 4: 0, 5: 0, 6: 1},
-                  4: {1: 0, 2: 0, 3: 0, 4: 1, 5: 0, 6: 1}}
+def draw_graph(G, min_list):
+    #temporary printing
+    result = min_list.index(max(min_list)) + 1
+    # make selection among solutions
+    print "Optimum Ci placement is Ci =", result
+    if result == 1:
+        print "Controllers are placed in nodes 5 and 6"
+    elif result ==2:
+        print "Controllers are placed in nodes 5 and 3"
+    elif result ==3:
+        print "Controllers are placed in nodes 3 and 6"
+    else:
+        print "Controllers are placed in nodes 4 and 6"
 
-    G = nx.Graph()
-    G.add_nodes_from([1,6])
-    G.add_weighted_edges_from(elist)
+    # positions for all nodes
+    pos=nx.spring_layout(G)
 
+    # draw graph
+    nx.draw(G,pos)
+    nx.draw_networkx_labels(G,pos,node_size=700)
+    # nx.draw_networkx_edge_labels(G,pos)
+    edge_labels=dict([((u,v,),d['weight']) for u,v,d in G.edges(data=True)])
+    nx.draw_networkx_edge_labels(G,pos,edge_labels=edge_labels)
+
+    # display graph
+    plt.show()
+
+
+def mcda_alg(G, elist, cplacement):
     '''
     Compute shortest path lengths between all nodes in a weighted graph.
     g_path_len will be a dictionary, keyed by source and target, of shortest
@@ -250,31 +266,22 @@ def static_execution(args, nargs):
     for i, v in t_dparams.iteritems():
         min_list.append(min(v.itervalues()))
 
-    #temporary printing
-    result = min_list.index(max(min_list)) + 1
-    # make selection among solutions
-    print "Optimum Ci placement is Ci =", result
-    if result == 1:
-        print "Controllers are placed in nodes 5 and 6"
-    elif result ==2:
-        print "Controllers are placed in nodes 5 and 3"
-    elif result ==3:
-        print "Controllers are placed in nodes 3 and 6"
-    else:
-        print "Controllers are placed in nodes 4 and 6"
+    draw_graph(G, min_list)
 
-    # positions for all nodes
-    pos=nx.spring_layout(G)
+def static_execution(args, nargs):
+    elist = [(1,5,4),(1,6,2),(2,3,5),(2,4,2),(2,5,3),(2,6,6),(3,2,5),(3,5,5),
+             (3,6,2),(4,2,2),(4,5,1),(4,6,4),(5,1,4),(5,2,3),(5,3,5),(5,4,1),
+             (5,6,3),(6,1,2),(6,2,6),(6,3,2),(6,4,4),(6,5,3)]
+    cplacement = {1: {1: 0, 2: 0, 3: 0, 4: 0, 5: 1, 6: 1},
+                  2: {1: 0, 2: 0, 3: 1, 4: 0, 5: 1, 6: 0},
+                  3: {1: 0, 2: 0, 3: 1, 4: 0, 5: 0, 6: 1},
+                  4: {1: 0, 2: 0, 3: 0, 4: 1, 5: 0, 6: 1}}
 
-    # draw graph
-    nx.draw(G,pos)
-    nx.draw_networkx_labels(G,pos,node_size=700)
-    # nx.draw_networkx_edge_labels(G,pos)
-    edge_labels=dict([((u,v,),d['weight']) for u,v,d in G.edges(data=True)])
-    nx.draw_networkx_edge_labels(G,pos,edge_labels=edge_labels)
+    G = nx.Graph()
+    G.add_nodes_from([1,6])
+    G.add_weighted_edges_from(elist)
 
-    # display graph
-    plt.show()
+    mcda_alg(G, elist, cplacement)
 
 def random_edge_list(args):
     edge_list = [(i, j, random.randint(1, args.n))
