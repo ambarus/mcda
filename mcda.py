@@ -171,20 +171,21 @@ def normalize_dparam(dparam, weight, r, a):
     """
     return weight * (r - dparam) / (r - a)
 
-def draw_graph(G, min_list):
-    #temporary printing
-    result = min_list.index(max(min_list)) + 1
-    # make selection among solutions
-    print "Optimum Ci placement is Ci =", result
-    if result == 1:
-        print "Controllers are placed in nodes 5 and 6"
-    elif result ==2:
-        print "Controllers are placed in nodes 5 and 3"
-    elif result ==3:
-        print "Controllers are placed in nodes 3 and 6"
-    else:
-        print "Controllers are placed in nodes 4 and 6"
+def print_ci_info(min_list, cplacement):
+    result = min_list.index(max(min_list))
 
+    #in static example, first ci placement is 1 and not 0
+    if args.static:
+        result += 1
+
+    print "Optimum Ci placement is Ci =", result
+
+    for key, value in cplacement[result].iteritems():
+        if value:
+            print "Controller is placed in node", key
+
+
+def draw_graph(G):
     # positions for all nodes
     pos=nx.spring_layout(G)
 
@@ -266,7 +267,8 @@ def mcda_alg(G, elist, cplacement):
     for i, v in t_dparams.iteritems():
         min_list.append(min(v.itervalues()))
 
-    draw_graph(G, min_list)
+    print_ci_info(min_list, cplacement)
+    draw_graph(G)
 
 def static_execution():
     elist = [(1,5,4),(1,6,2),(2,3,5),(2,4,2),(2,5,3),(2,6,6),(3,2,5),(3,5,5),
