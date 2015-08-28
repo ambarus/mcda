@@ -13,6 +13,7 @@ __email__ = "tudor.ambarus@gmail.com"
 __status__ = "Development"
 
 from collections import defaultdict
+from itertools import combinations
 import argparse
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -47,6 +48,8 @@ def parse_args():
     parser.add_argument("--static", help="Use default static undirected graph",
                         action="store_true")
     parser.add_argument("-n", type=int, help="Number of graph nodes")
+    parser.add_argument("-c", type=int, help="Number of controllers in graph. "
+                        "Allowed values are between N/3 and N/7")
     #parser.add_argument("-c", "--controlers", dest="controlers", metavar="C",
                          #default=2, type=int, help="Number of controlers")
     args = parser.parse_args()
@@ -84,8 +87,9 @@ def average_latency(g_path_len, ci):
         # list of lengths from source to Ci domain
         s_ci_len = []
         for target, t_value in s_value.iteritems():
-            if ci[target]:
-                s_ci_len.append(t_value)
+            if target in ci:
+                if ci[target]:
+                    s_ci_len.append(t_value)
         avg = avg + min(s_ci_len)
 
     return avg / len(g_path_len)
@@ -114,8 +118,9 @@ def worst_latency(g_path_len, ci):
         # list of lengths from source to Ci domain
         s_ci_len = []
         for target, t_value in s_value.iteritems():
-            if ci[target]:
-               s_ci_len.append(t_value)
+            if target in ci:
+                if ci[target]:
+                    s_ci_len.append(t_value)
         s_ci_min_len.append(min(s_ci_len))
 
     return max(s_ci_min_len)
@@ -139,12 +144,14 @@ def inter_controller_latency(g_path_len, ci):
     """
     icl_path_len = []
     for source, s_value in g_path_len.iteritems():
-        if ci[source]:
-            for target, t_value in s_value.iteritems():
-                if ci[target]:
-                    icl_path_len.append(g_path_len[source][target])
-            # compute only 1:N controller-to-controllers distances
-            break
+        if source in ci:
+                if ci[source]:
+                    for target, t_value in s_value.iteritems():
+                        if target in ci:
+                            if ci[target]:
+                                icl_path_len.append(g_path_len[source][target])
+                    # compute only 1:N controller-to-controllers distances
+                    break
 
     return max(icl_path_len)
 
@@ -275,8 +282,21 @@ def random_edge_list(args):
                  for j in range(i+1, args.n)]
     return edge_list
 
+def controller_pairs(args):
+    cplacement = defaultdict(dict)
+    liste = [x for x in combinations(range(args.n), args.c)]
+
+    for i in range(len(liste)):
+        for j in range(args.c):
+            cplacement[i][liste[i][j]] = 1
+    return cplacement
+
 def dynamic_execution(args, nargs):
     edge_list = random_edge_list(args)
+
+   #random controller placement
+    cplacement = controller_pairs(args)
+    print cplacement
 
 if __name__ == '__main__':
     # parse user arguments
