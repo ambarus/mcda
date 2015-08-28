@@ -268,7 +268,7 @@ def mcda_alg(G, elist, cplacement):
 
     draw_graph(G, min_list)
 
-def static_execution(args, nargs):
+def static_execution():
     elist = [(1,5,4),(1,6,2),(2,3,5),(2,4,2),(2,5,3),(2,6,6),(3,2,5),(3,5,5),
              (3,6,2),(4,2,2),(4,5,1),(4,6,4),(5,1,4),(5,2,3),(5,3,5),(5,4,1),
              (5,6,3),(6,1,2),(6,2,6),(6,3,2),(6,4,4),(6,5,3)]
@@ -283,13 +283,13 @@ def static_execution(args, nargs):
 
     mcda_alg(G, elist, cplacement)
 
-def random_edge_list(args):
+def random_edge_list():
     edge_list = [(i, j, random.randint(1, args.n))
                  for i in range(args.n)
                  for j in range(i+1, args.n)]
     return edge_list
 
-def controller_pairs(args):
+def controller_pairs():
     cplacement = defaultdict(dict)
     liste = [x for x in combinations(range(args.n), args.c)]
 
@@ -298,11 +298,11 @@ def controller_pairs(args):
             cplacement[i][liste[i][j]] = 1
     return cplacement
 
-def dynamic_execution(args, nargs):
-    edge_list = random_edge_list(args)
+def dynamic_execution():
+    edge_list = random_edge_list()
 
     #all controller placement combinations
-    cplacement = controller_pairs(args)
+    cplacement = controller_pairs()
 
     G = nx.Graph()
     G.add_nodes_from([0, args.n - 1])
@@ -315,6 +315,6 @@ if __name__ == '__main__':
     args, nargs = parse_args()
 
     if args.static:
-        static_execution(args, nargs)
+        static_execution()
     else:
-        dynamic_execution(args, nargs)
+        dynamic_execution()
