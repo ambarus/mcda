@@ -301,9 +301,14 @@ def controller_pairs(args):
 def dynamic_execution(args, nargs):
     edge_list = random_edge_list(args)
 
-   #random controller placement
+    #all controller placement combinations
     cplacement = controller_pairs(args)
-    print cplacement
+
+    G = nx.Graph()
+    G.add_nodes_from([0, args.n - 1])
+    G.add_weighted_edges_from(edge_list)
+
+    mcda_alg(G, edge_list, cplacement)
 
 if __name__ == '__main__':
     # parse user arguments
