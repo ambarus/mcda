@@ -223,7 +223,7 @@ def draw_graph(G, labels=None, graph_layout='spring',
     # show graph
     plt.show()
 
-def mcda_alg(G, elist, cplacement):
+def mcda_alg(G, cplacement):
     '''
     Compute shortest path lengths between all nodes in a weighted graph.
     g_path_len will be a dictionary, keyed by source and target, of shortest
@@ -306,7 +306,7 @@ def static_execution():
     G.add_nodes_from([1,6])
     G.add_weighted_edges_from(elist)
 
-    mcda_alg(G, elist, cplacement)
+    mcda_alg(G, cplacement)
 
 def random_edge_list():
     edge_list = [(i, j, random.randint(1, args.n))
@@ -333,7 +333,7 @@ def dynamic_execution():
     G.add_nodes_from([0, args.n - 1])
     G.add_weighted_edges_from(edge_list)
 
-    mcda_alg(G, edge_list, cplacement)
+    mcda_alg(G, cplacement)
 
 if __name__ == '__main__':
     # parse user arguments
