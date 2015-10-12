@@ -10,7 +10,7 @@ def print_ci_info(result, cplacement):
         if value:
             print "Controller is placed in node", key
 
-def draw_graph(G, labels=None, graph_layout='spring',
+def draw_graph(G, gml, labels=None, graph_layout='spring',
                node_size=1200, node_color='blue', node_alpha=0.3,
                node_text_size=12,
                edge_color='blue', edge_alpha=0.3, edge_tickness=1,
@@ -38,8 +38,11 @@ def draw_graph(G, labels=None, graph_layout='spring',
     """draw node labels"""
     nx.draw_networkx_labels(G, graph_pos,font_size=node_text_size,
                             font_family=text_font)
+    if gml:
+        edge_labels=dict([((u,v,),d['LinkCost']) for u,v,d in G.edges(data=True)])
+    else:
+        edge_labels=dict([((u,v,),d['weight']) for u,v,d in G.edges(data=True)])
 
-    edge_labels=dict([((u,v,),d['weight']) for u,v,d in G.edges(data=True)])
     nx.draw_networkx_edge_labels(G, graph_pos, edge_labels=edge_labels,
                                  label_pos=edge_text_pos)
     plt.xlim(-0.05,1.05)

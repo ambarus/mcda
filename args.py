@@ -33,6 +33,7 @@ def parse_args():
                         "Expects a weight (priority) in interval (0, 1]. ")
     parser.add_argument("--dynamic", help="Generate dynamic undirected graph",
                         action="store_true")
+    parser.add_argument("--gml", help="Parse gml graph", action="store_true")
     parser.add_argument("-n", type=int, help="Number of graph nodes")
     parser.add_argument("-c", type=int, help="Number of controllers in graph. "
                         "Allowed values are between N/3 and N/7")
