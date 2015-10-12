@@ -1,0 +1,14 @@
+#ignore logs, editor backups and python object files
+*.log
+*~
+*.pyc
+*.pyo
+\#*\#
+.\#*
+*.swp
+*.patch
+build
+*.egg-info
+*.egg
+*.cfg
+*.orig
