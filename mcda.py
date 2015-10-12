@@ -24,7 +24,10 @@ def mcda_alg(G, cplacement):
     g_path_len will be a dictionary, keyed by source and target, of shortest
     path lengths
     '''
-    g_path_len=nx.all_pairs_dijkstra_path_length(G)
+    if args.gml:
+        g_path_len=nx.all_pairs_dijkstra_path_length(G, weight='LinkCost')
+    else:
+        g_path_len=nx.all_pairs_dijkstra_path_length(G)
 
     '''
     Construct decision parameters dictionary of dictionaries.
@@ -49,7 +52,10 @@ def mcda_alg(G, cplacement):
     '''
     else:
         # static reservation level
-        r = [3, 6, 6]
+        if args.gml:
+            r = [3 * 22, 6 * 22, 6 *22]
+        else:
+            r = [3, 6, 6]
         # static aspiration level
         a = [0, 0, 0]
 
@@ -84,7 +90,7 @@ def mcda_alg(G, cplacement):
     result = min_dparam.index(max(min_dparam))
 
     print_ci_info(result, cplacement)
-    draw_graph(G)
+    draw_graph(G, args.gml)
 
 def static_execution():
     """
@@ -113,26 +119,26 @@ def static_execution():
 
     mcda_alg(G, cplacement)
 
+def controller_pairs(n, c):
+    cplacement = defaultdict(dict)
+    liste = [x for x in combinations(range(n), c)]
+
+    for i in range(len(liste)):
+        for j in range(c):
+            cplacement[i][liste[i][j]] = 1
+    return cplacement
+
 def random_edge_list():
     edge_list = [(i, j, random.randint(1, args.n))
                  for i in range(args.n)
                  for j in range(i+1, args.n)]
     return edge_list
 
-def controller_pairs():
-    cplacement = defaultdict(dict)
-    liste = [x for x in combinations(range(args.n), args.c)]
-
-    for i in range(len(liste)):
-        for j in range(args.c):
-            cplacement[i][liste[i][j]] = 1
-    return cplacement
-
 def dynamic_execution():
     edge_list = random_edge_list()
 
     #all controller placement combinations
-    cplacement = controller_pairs()
+    cplacement = controller_pairs(args.n, args.c)
 
     G = nx.Graph()
     G.add_nodes_from([0, args.n - 1])
@@ -140,9 +146,54 @@ def dynamic_execution():
 
     mcda_alg(G, cplacement)
 
+def add_int_link_cost(G):
+    """
+    LinkCost = 1 / Bandwith.
+    LinkLabel contains Bandwith values in Mbps.
+    Compute the value as 1 (Gbps) / Bandwith (Gbps)
+    """
+    for edge in G.edges(data=True):
+        edge[2]['LinkCost'] = 1000 / int(edge[2]['LinkLabel'].split(" ")[0])
+
+def gml_controller_pairs(G, no_c):
+    '''
+    cplacement will be a dictionary of dictionaries like the one
+    listed above:
+
+    {0: {u'San Diego': 1, u'Jackson': 1, u'Dallas': 1},
+     1: {u'San Diego': 1, u'Jackson': 1, u'Philadelphia': 1},
+     2: {u'San Diego': 1, u'Jackson': 1, u'Denver': 1},
+     .
+     .
+     .
+
+     2924: {u'Oakland': 1, u'New York': 1, u'Cleveland': 1}
+    }
+    '''
+    cplacement = defaultdict(dict)
+    liste = [x for x in combinations(G.node, no_c)]
+
+    for i in range(len(liste)):
+        for j in range(no_c):
+            cplacement[i][liste[i][j]] = 1
+    return cplacement
+
+def run_gml():
+    G=nx.read_gml('topologyzoo/sources/Bbnplanet.gml')
+    add_int_link_cost(G)
+
+    g_path_len=nx.all_pairs_dijkstra_path_length(G, weight='LinkCost')
+
+    cplacement = gml_controller_pairs(G, 3)
+
+    mcda_alg(G, cplacement)
+
 if __name__ == '__main__':
     # parse user arguments
     args, nargs = parse_args()
+    if args.gml:
+        run_gml()
+        exit()
 
     if not args.dynamic:
         static_execution()
