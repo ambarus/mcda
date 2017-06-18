@@ -33,11 +33,11 @@ def mcda_alg(G, cplacement):
     dparams = defaultdict(dict)
     for ci, ci_value in cplacement.iteritems():
         if args.a:
-            dparams[1][ci] = average_latency(g_path_len, ci_value)
+            dparams[0][ci] = average_latency(g_path_len, ci_value)
         if args.w:
-            dparams[2][ci] = worst_latency(g_path_len, ci_value)
+            dparams[1][ci] = worst_latency(g_path_len, ci_value)
         if args.i:
-            dparams[3][ci] = inter_controller_latency(g_path_len, ci_value)
+            dparams[2][ci] = inter_controller_latency(g_path_len, ci_value)
 
     # use static levels in order to check the correctness of algorithms
     if False:'''
@@ -62,43 +62,53 @@ def mcda_alg(G, cplacement):
     if args.i:
         largs.append(args.i)
 
-    for k, v in dparams.iteritems():
-        # lists are indexed starting with int(0) value
-        t = k-1
-        for i in range (1,ci+1):
-            dparams[k][i] = normalize_dparam(dparams[k][i], largs[t], r[t], a[t])
-
-    '''
-    Transposed decision parameters dictionaty of dictionaries.
-    t_dparams will be keyed by Ci placement and decision parameter.
-    '''
-    t_dparams = defaultdict(dict)
-    for i, v in dparams.iteritems():
-        for j in range(1,ci+1):
-            t_dparams[j][i] = dparams[i][j]
+    for k in dparams:
+        for i in range (0,ci+1):
+            dparams[k][i] = normalize_dparam(dparams[k][i], largs[k], r[k], a[k])
 
     '''
     Compute for each candidate solution Ci, the minimum among
     all its normalized decision parameters / variables.
     '''
-    min_list = []
-    for i, v in t_dparams.iteritems():
-        min_list.append(min(v.itervalues()))
+    max_cost = 999
+    min_dparam = []
+    for i in range (0,ci+1):
+	min_dparam.append(max_cost)
 
-    print_ci_info(min_list, cplacement, args)
+    for ci_dict in dparams.itervalues():
+	for ci, dparam_value in ci_dict.iteritems():
+             min_dparam[ci] = min(min_dparam[ci], dparam_value)
+
+    '''select the best ci placement, the one having the highest
+       of the minimum normalized decision parameters'''
+    result = min_dparam.index(max(min_dparam))
+
+    print_ci_info(result, cplacement)
     draw_graph(G)
 
 def static_execution():
-    elist = [(1,5,4),(1,6,2),(2,3,5),(2,4,2),(2,5,3),(2,6,6),(3,2,5),(3,5,5),
-             (3,6,2),(4,2,2),(4,5,1),(4,6,4),(5,1,4),(5,2,3),(5,3,5),(5,4,1),
-             (5,6,3),(6,1,2),(6,2,6),(6,3,2),(6,4,4),(6,5,3)]
-    cplacement = {1: {1: 0, 2: 0, 3: 0, 4: 0, 5: 1, 6: 1},
-                  2: {1: 0, 2: 0, 3: 1, 4: 0, 5: 1, 6: 0},
-                  3: {1: 0, 2: 0, 3: 1, 4: 0, 5: 0, 6: 1},
-                  4: {1: 0, 2: 0, 3: 0, 4: 1, 5: 0, 6: 1}}
+    """
+    Edge list is composed of tuples defined as:
+    (node_x, node_y, weight_between_x_and_y)
+    """
+    elist = [(0,4,4),(0,5,2),(1,2,5),(1,3,2),(1,4,3),(1,5,6),(2,1,5),(2,4,5),
+             (2,5,2),(3,1,2),(3,4,1),(3,5,4),(4,0,4),(4,1,3),(4,2,5),(4,3,1),
+             (4,5,3),(5,0,2),(5,1,6),(5,2,2),(5,3,4),(5,4,3)]
 
+    """
+    Dictionary of dictionary. The parent represent the controller placement
+    solutions. There are 4 proposed solutions. The childs are keyed by the
+    node number and value 1 represent that the node is a controller.
+    """
+    cplacement = {0: {0: 0, 1: 0, 2: 0, 3: 0, 4: 1, 5: 1},
+                  1: {0: 0, 1: 0, 2: 1, 3: 0, 4: 1, 5: 0},
+                  2: {0: 0, 1: 0, 2: 1, 3: 0, 4: 0, 5: 1},
+                  3: {0: 0, 1: 0, 2: 0, 3: 1, 4: 0, 5: 1}}
+
+
+    """create an empty graph"""
     G = nx.Graph()
-    G.add_nodes_from([1,6])
+    G.add_nodes_from([0,5])
     G.add_weighted_edges_from(elist)
 
     mcda_alg(G, cplacement)

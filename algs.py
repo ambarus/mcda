@@ -4,7 +4,7 @@
 from __future__ import division
 
 
-def average_latency(g_path_len, ci):
+def average_latency(g_path_len, ci_dict):
     """Average latency for a graph and a specific Ci controller placement
 
     Parameters
@@ -13,22 +13,22 @@ def average_latency(g_path_len, ci):
                  between all nodes in a weighted graph.
                  g_path_len is keyed by source and target, of shortest path
                  lengths
-    ci : particular placement of controllers. Dictionary is keyed by node and
-         has value int(1) if controller identifies with keyed node.
+    ci_dict : particular placement of controllers. Dictionary is keyed by node
+              and has value int(1) if controller identifies with keyed node.
 
     Returns
     ------
     Average latency for a graph and a specific Ci controller placement
     """
     avg = 0
-    for source, s_value in g_path_len.iteritems():
-        # list of lengths from source to Ci domain
-        s_ci_len = []
-        for target, t_value in s_value.iteritems():
-            if target in ci:
-                if ci[target]:
-                    s_ci_len.append(t_value)
-        avg = avg + min(s_ci_len)
+    for src, dst_dict in g_path_len.iteritems():
+        # list of costs from source to Ci domain
+        src_ci_cost = []
+        for dst, cost in dst_dict.iteritems():
+            if dst in ci_dict:
+                if ci_dict[dst]:
+                    src_ci_cost.append(cost)
+        avg = avg + min(src_ci_cost)
 
     return avg / len(g_path_len)
 
