@@ -18,6 +18,28 @@ from algs import *
 from args import *
 from draw import *
 
+
+def allocate_fw_to_c(G, g_path_len, ci):
+    '''
+    Take into consideration to assign the appartenance to controller
+    in any node form G.nodes()
+    '''
+    fw_c = defaultdict(dict)
+    for src in g_path_len.keys():
+        for dst, dst_value in ci.iteritems():
+            '''if dst is controller and src != dst '''
+            if dst_value == 1 and src != dst:
+                min_value = g_path_len[src][dst]
+                controller = dst
+                break
+        for dst, dst_value in ci.iteritems():
+            if dst_value == 1 and src != dst:
+                if g_path_len[src][dst] < min_value:
+                    min_value = g_path_len[src][dst]
+                    controller = dst
+        fw_c[src]['min_cost_controller'] = controller
+    return fw_c
+
 def mcda_alg(G, cplacement):
     '''
     Compute shortest path lengths between all nodes in a weighted graph.
@@ -89,8 +111,11 @@ def mcda_alg(G, cplacement):
        of the minimum normalized decision parameters'''
     result = min_dparam.index(max(min_dparam))
 
+    fw_c = defaultdict(dict)
+    fw_c = allocate_fw_to_c(G, g_path_len, cplacement[result])
+
     print_ci_info(result, cplacement)
-    draw_graph(G, args.gml)
+    draw_graph(G, fw_c, args.gml)
 
 def static_execution():
     """
