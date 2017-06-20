@@ -4,6 +4,29 @@
 from __future__ import division
 
 
+def load_imbalance(G, g_path_len, ci, fw_c):
+    '''
+    Funtion returns the difference between the maximum and
+    minimum number of nodes assigned to a controller.
+    '''
+    for node, ctrl in ci.iteritems():
+        if ctrl != 0:
+            for value in fw_c.values():
+                if node == value['min_cost_controller']:
+                    ci[node] += 1
+            '''remove value one from initial ci placement'''
+            ci[node] -= 1
+
+    min_value = ci.values()[0]
+    max_value = ci.values()[0]
+    for value in ci.values():
+        if (value < min_value):
+            min_value = value
+        elif (value > max_value):
+            max_value = value
+
+    return max_value - min_value
+
 def average_latency(g_path_len, ci_dict):
     """Average latency for a graph and a specific Ci controller placement
 
