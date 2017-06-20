@@ -38,6 +38,26 @@ def allocate_fw_to_c(G, g_path_len, ci):
                     min_value = g_path_len[src][dst]
                     controller = dst
         fw_c[src]['min_cost_controller'] = controller
+
+    return fw_c
+
+def backup_controller(G, g_path_len, ci, fw_c):
+    for src in g_path_len.keys():
+        for dst, dst_value in ci.iteritems():
+            '''if dst is controller and src != dst
+               and it's not the first controller'''
+            if dst_value == 1 and src != dst and \
+               fw_c[src]['min_cost_controller'] != dst:
+                min_value = g_path_len[src][dst]
+                backup_ctrl = dst
+                break
+        for dst, dst_value in ci.iteritems():
+            if dst_value == 1 and src != dst and \
+               fw_c[src]['min_cost_controller'] != dst:
+                if g_path_len[src][dst] < min_value:
+                    min_value = g_path_len[src][dst]
+                    backup_ctrl = dst
+        fw_c[src]['backup_ctrl'] = backup_ctrl
     return fw_c
 
 def mcda_alg(G, cplacement):
@@ -113,6 +133,10 @@ def mcda_alg(G, cplacement):
 
     fw_c = defaultdict(dict)
     fw_c = allocate_fw_to_c(G, g_path_len, cplacement[result])
+
+    if (len(cplacement[result]) > 1):
+        backup_dict = defaultdict(dict)
+        backup_dict = backup_controller(G, g_path_len, cplacement[result], fw_c)
 
     print_ci_info(result, cplacement)
     draw_graph(G, fw_c, args.gml)
