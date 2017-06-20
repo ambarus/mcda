@@ -10,7 +10,7 @@ def print_ci_info(result, cplacement):
         if value:
             print "Controller is placed in node", key
 
-def draw_graph(G, gml, labels=None, graph_layout='spring',
+def draw_graph(G, fw_c, gml, labels=None, graph_layout='spring',
                node_size=1200, node_color='blue', node_alpha=0.3,
                node_text_size=12,
                edge_color='blue', edge_alpha=0.3, edge_tickness=1,
@@ -29,6 +29,11 @@ def draw_graph(G, gml, labels=None, graph_layout='spring',
         graph_pos=nx.random_layout(G)
     else:
         graph_pos=nx.shell_layout(G)
+
+    if not gml:
+        node_color = []
+        for key, value in fw_c.iteritems():
+            node_color.append(id(value['min_cost_controller'])%100)
 
     """draw graph"""
     nx.draw_networkx_nodes(G,graph_pos,node_size=node_size,
