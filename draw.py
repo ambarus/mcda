@@ -3,6 +3,22 @@
 
 import networkx as nx
 import matplotlib.pyplot as plt
+from wrap import *
+
+def show_info(fw_c, cplacement, result):
+    print '\nOptimum controller placement is Ci =', result
+    print 'Node that are controllers are marked with *'
+    print '\n'
+    labels = ('Node', 'Controller', 'Backup Controller')
+    list_of_lists = []
+    for node, prop in fw_c.iteritems():
+        a_list = []
+        a_list.append(node)
+        a_list.append(prop['min_cost_controller'])
+        a_list.append(prop['backup_ctrl'])
+        list_of_lists.append(a_list)
+
+    print indent([labels]+list_of_lists, hasHeader=True)
 
 def print_ci_info(result, cplacement):
     print "Optimum Ci placement is Ci =", result
