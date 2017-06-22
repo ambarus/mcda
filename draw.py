@@ -46,14 +46,13 @@ def draw_graph(G, fw_c, gml, labels=None, graph_layout='spring',
     else:
         graph_pos=nx.shell_layout(G)
 
-    if not gml:
-        node_color = []
-        for key, value in fw_c.iteritems():
-            node_color.append(id(value['min_cost_controller'])%100)
+    color_list = []
+    for node in G.nodes():
+        color_list.append(fw_c[node]['color'])
 
     """draw graph"""
     nx.draw_networkx_nodes(G,graph_pos,node_size=node_size,
-                           alpha=node_alpha, node_color=node_color)
+                           alpha=node_alpha, node_color=color_list)
     nx.draw_networkx_edges(G,graph_pos,width=edge_tickness,
                            alpha=edge_alpha,edge_color=edge_color)
     """draw node labels"""
