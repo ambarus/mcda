@@ -23,6 +23,7 @@ def allocate_fw_to_c(G, g_path_len, ci):
     Take into consideration to assign the appartenance to controller
     in any node form G.nodes()
     '''
+    color_list = ['b', 'g', 'r', 'c', 'y', 'k', 'w', 'm', 'y','r', 'g', 'b']
     fw_c = defaultdict(dict)
     for src in g_path_len.keys():
         for dst, dst_value in ci.iteritems():
@@ -43,9 +44,16 @@ def allocate_fw_to_c(G, g_path_len, ci):
 
         if src_is_ctrl:
             fw_c[src]['min_cost_controller'] = '*'
+            fw_c[src]['color'] = color_list.pop()
         else:
             fw_c[src]['min_cost_controller'] = controller
+            fw_c[src]['color'] = ''
 
+    '''set color for forwarders'''
+    for src in fw_c.iterkeys():
+        if fw_c[src]['color'] == '':
+            ctrl_idx = fw_c[src]['min_cost_controller']
+            fw_c[src]['color'] = fw_c[ctrl_idx]['color']
     return fw_c
 
 def backup_controller(G, g_path_len, ci, fw_c):
