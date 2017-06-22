@@ -18,7 +18,6 @@ from algs import *
 from args import *
 from draw import *
 
-
 def allocate_fw_to_c(G, g_path_len, ci):
     '''
     Take into consideration to assign the appartenance to controller
@@ -37,7 +36,15 @@ def allocate_fw_to_c(G, g_path_len, ci):
                 if g_path_len[src][dst] < min_value:
                     min_value = g_path_len[src][dst]
                     controller = dst
-        fw_c[src]['min_cost_controller'] = controller
+        src_is_ctrl = False;
+        for ctrl in ci.iterkeys():
+            if src == ctrl:
+                src_is_ctrl = True;
+
+        if src_is_ctrl:
+            fw_c[src]['min_cost_controller'] = '*'
+        else:
+            fw_c[src]['min_cost_controller'] = controller
 
     return fw_c
 
@@ -49,15 +56,15 @@ def backup_controller(G, g_path_len, ci, fw_c):
             if dst_value == 1 and src != dst and \
                fw_c[src]['min_cost_controller'] != dst:
                 min_value = g_path_len[src][dst]
-                backup_ctrl = dst
+                backup_controller = dst
                 break
         for dst, dst_value in ci.iteritems():
             if dst_value == 1 and src != dst and \
                fw_c[src]['min_cost_controller'] != dst:
                 if g_path_len[src][dst] < min_value:
                     min_value = g_path_len[src][dst]
-                    backup_ctrl = dst
-        fw_c[src]['backup_ctrl'] = backup_ctrl
+                    backup_controller = dst
+        fw_c[src]['backup_ctrl'] = backup_controller
     return fw_c
 
 def mcda_alg(G, cplacement):
@@ -138,7 +145,10 @@ def mcda_alg(G, cplacement):
         backup_dict = defaultdict(dict)
         backup_dict = backup_controller(G, g_path_len, cplacement[result], fw_c)
 
-    print_ci_info(result, cplacement)
+    if args.gml:
+        show_info(fw_c, cplacement, result)
+    else:
+        print_ci_info(result, cplacement)
     draw_graph(G, fw_c, args.gml)
 
 def static_execution():
