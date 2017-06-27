@@ -24,6 +24,7 @@ def allocate_fw_to_c(G, g_path_len, ci):
     in any node form G.nodes()
     '''
     color_list = ['b', 'g', 'r', 'c', 'y', 'k', 'w', 'm', 'y','r', 'g', 'b']
+    '''forwarder to controller dictionary of dictionaries'''
     fw_c = defaultdict(dict)
     for src in g_path_len.keys():
         for dst, dst_value in ci.iteritems():
@@ -33,23 +34,29 @@ def allocate_fw_to_c(G, g_path_len, ci):
                 controller = dst
                 break
         for dst, dst_value in ci.iteritems():
+            '''if dst is controller and src != dst '''
             if dst_value == 1 and src != dst:
                 if g_path_len[src][dst] < min_value:
                     min_value = g_path_len[src][dst]
                     controller = dst
+
         src_is_ctrl = False;
         for ctrl in ci.iterkeys():
             if src == ctrl:
+                '''src is a controller node'''
                 src_is_ctrl = True;
 
         if src_is_ctrl:
+            '''if src is a controller, assign a color to it'''
             fw_c[src]['min_cost_controller'] = '*'
             fw_c[src]['color'] = color_list.pop()
         else:
+            '''src is just a node, assign it's controller'''
             fw_c[src]['min_cost_controller'] = controller
             fw_c[src]['color'] = ''
 
-    '''set color for forwarders'''
+    '''the forwarders/nodes will have the same color as their
+    controller'''
     for src in fw_c.iterkeys():
         if fw_c[src]['color'] == '':
             ctrl_idx = fw_c[src]['min_cost_controller']
@@ -60,13 +67,23 @@ def backup_controller(G, g_path_len, ci, fw_c):
     for src in g_path_len.keys():
         for dst, dst_value in ci.iteritems():
             '''if dst is controller and src != dst
-               and it's not the first controller'''
+               and dst is not the main controller,
+               then dst can be the backup controller'''
             if dst_value == 1 and src != dst and \
                fw_c[src]['min_cost_controller'] != dst:
                 min_value = g_path_len[src][dst]
                 backup_controller = dst
+                '''this iteration is needed just to
+                find the first controller that is not
+                the main controller'''
                 break
+        '''select the backup controller from the entire
+        controllers, now that we have a min_value and we
+        can compute the min cost among all the controllers'''
         for dst, dst_value in ci.iteritems():
+            '''if dst is controller and src != dst
+               and dst is not the main controller,
+               then dst can be the backup controller'''
             if dst_value == 1 and src != dst and \
                fw_c[src]['min_cost_controller'] != dst:
                 if g_path_len[src][dst] < min_value:
@@ -80,6 +97,21 @@ def mcda_alg(G, cplacement):
     Compute shortest path lengths between all nodes in a weighted graph.
     g_path_len will be a dictionary, keyed by source and target, of shortest
     path lengths
+
+    {u'Jackson': {u'Jackson': 0, u'Dallas': 44, u'Philadelphia': 88,
+                  u'Denver':110, u'Richmond': 66, u'Orange': 88,
+                  u'San Francisco': 110, u'Columbus': 110, u'Sacramento': 110,
+                  u'San Diego': 88, u'Washington, DC': 44, u'Los Angeles': 66,
+                  u'Atlanta': 22, u'San Jose': 66, u'Detroit': 110,
+                  u'Palo Alto': 88, u'Austin': 66, u'Baltimore': 66,
+                  u'Houston': 66, u'Cambridge': 88, u'Cincinnati': 110,
+                  u'Boston': 132, u'Minneapolis': 132, u'New York': 66,
+                  u'Chicago': 110, u'Cleveland': 88, u'Oakland': 88}
+    .
+    .
+    .
+    next_node ...
+    }
     '''
     if args.gml:
         g_path_len=nx.all_pairs_dijkstra_path_length(G, weight='LinkCost')
@@ -89,6 +121,9 @@ def mcda_alg(G, cplacement):
     '''
     Construct decision parameters dictionary of dictionaries.
     dparam will be keyed by decision parameter and Ci placement.
+
+    Here the matrix is in the form M{decision_variable, C_placement_solution}
+
     '''
     dparams = defaultdict(dict)
     for ci, ci_value in cplacement.iteritems():
@@ -110,6 +145,7 @@ def mcda_alg(G, cplacement):
     else:
         # static reservation level
         if args.gml:
+            '''multiply with 22, the cost of links'''
             r = [3 * 22, 6 * 22, 6 *22]
         else:
             r = [3, 6, 6]
@@ -125,6 +161,9 @@ def mcda_alg(G, cplacement):
     if args.i:
         largs.append(args.i)
 
+    '''
+    normalize the decision variables
+    The matrix is still in format M{V, Ci}'''
     for k in dparams:
         for i in range (0,ci+1):
             dparams[k][i] = normalize_dparam(dparams[k][i], largs[k], r[k], a[k])
@@ -132,23 +171,30 @@ def mcda_alg(G, cplacement):
     '''
     Compute for each candidate solution Ci, the minimum among
     all its normalized decision parameters / variables.
+
+    put a static maximum cost here, we are sure that this cost
+    will NOT be minimum in all possible situations
     '''
     max_cost = 999
     min_dparam = []
     for i in range (0,ci+1):
 	min_dparam.append(max_cost)
 
+    '''for each possible solution Ci, compute the minimum among
+    the normalized decision variables'''
     for ci_dict in dparams.itervalues():
 	for ci, dparam_value in ci_dict.iteritems():
              min_dparam[ci] = min(min_dparam[ci], dparam_value)
 
     '''select the best ci placement, the one having the highest
-       of the minimum normalized decision parameters'''
+       of the minimum normalized decision variables'''
     result = min_dparam.index(max(min_dparam))
 
+    '''allocate forwarder(node) to controller'''
     fw_c = defaultdict(dict)
     fw_c = allocate_fw_to_c(G, g_path_len, cplacement[result])
 
+    '''compute backup controller for each node'''
     if (len(cplacement[result]) > 1):
         backup_dict = defaultdict(dict)
         backup_dict = backup_controller(G, g_path_len, cplacement[result], fw_c)
@@ -246,11 +292,12 @@ def gml_controller_pairs(G, no_c):
     return cplacement
 
 def run_gml():
+    '''read gml and create a graph indexed by source and destination'''
     G=nx.read_gml('topologyzoo/sources/Bbnplanet.gml')
+    '''add edge/link values for each source and destination pair'''
     add_int_link_cost(G)
 
-    g_path_len=nx.all_pairs_dijkstra_path_length(G, weight='LinkCost')
-
+    '''combinari de n luate cate k solutii posibile'''
     cplacement = gml_controller_pairs(G, args.c)
 
     mcda_alg(G, cplacement)
